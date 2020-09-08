@@ -69,7 +69,7 @@ contract MasterStar is Ownable {
     uint256 public firstTokenPerBlock;
     // Moon tokens created per block. the current halve logic
     uint256 public currentTokenPerBlock;
-    // Bonus muliplier for Early Token makers.
+    // Bonus muliplier for early Token makers.
     uint256 public constant BONUS_MULTIPLIER = 10;
     // Total Miner Token
     uint256 public constant MAX_TOKEN_MINER = 1e18 * 1e8; // 100 million

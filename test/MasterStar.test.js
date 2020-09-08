@@ -47,25 +47,69 @@ contract('MasterStar', ([alice, bob, carol, lpAddr, crossAddr, dev, minter]) => 
             // assert.equal((await this.lp.balanceOf(bob)).valueOf(), '1000');
          });
 
-         it('when dely deposit test', async () => {
+         // it('mult pool test diff time', async () => {
+         //      // startBlock = 100
+         //      this.master = await MasterStar.new(this.token.address, dev, '10', '100', { from: alice });
+         //      await this.token.transferOwnership(this.master.address, { from: alice });
+         //      await this.master.mintEarlybirdToken(lpAddr, {from: alice});
+         //      await this.master.add(1, this.lp.address, true);
+         //      await time.advanceBlockTo('110');
+         //      await this.lp.approve(this.master.address, '1000', { from: bob });
+         //      await this.master.deposit(0, '100', { from: bob }); // 111
+         //      await time.advanceBlockTo('112');
+         //      await this.master.deposit(0, 0, { from: bob }); // 113
+         //      console.log('bob balance =>', (await this.token.balanceOf(bob)).valueOf().toString());
+         //
+         //      await this.master.add(2, this.lp2.address, true);
+         //      await this.lp2.approve(this.master.address, '1000', { from: alice });
+         //      await this.master.deposit(1, '100', { from: alice }); // 114
+         //      await time.advanceBlockTo('120');
+         //      await this.master.deposit(0, 0, { from: bob }); // 121
+         //      await this.master.deposit(1, 0, { from: alice }); // 122
+         //      console.log('bob balance =>', (await this.token.balanceOf(bob)).valueOf().toString());
+         //      console.log('alice balance =>', (await this.token.balanceOf(alice)).valueOf().toString());
+         // });
+
+
+         it('mult pool test same time', async () => {
               // startBlock = 100
-              this.master = await MasterStar.new(this.token.address, dev, '100', '100', { from: alice });
+              this.master = await MasterStar.new(this.token.address, dev, '10', '100', { from: alice });
               await this.token.transferOwnership(this.master.address, { from: alice });
               await this.master.mintEarlybirdToken(lpAddr, {from: alice});
-              await this.master.add('100', this.lp.address, true);
-              console.log('lastRewardBlock => ', (await this.master.poolInfo(0))['lastRewardBlock'].toString());
+              await this.master.add(1, this.lp.address, true);
+              await this.master.add(2, this.lp2.address, true);
 
               await time.advanceBlockTo('110');
               await this.lp.approve(this.master.address, '1000', { from: bob });
+              await this.lp2.approve(this.master.address, '1000', { from: alice });
               await this.master.deposit(0, '100', { from: bob }); // 111
+              await this.master.deposit(1, '100', { from: alice }); // 114
 
-              console.log('startBlock => ', (await this.master.startBlock()).valueOf().toString());
-              console.log('firstMinerBlock => ', (await this.master.firstMinerBlock()).valueOf().toString());
-              console.log('genesisEndBlock => ', (await this.master.genesisEndBlock()).valueOf().toString());
-              console.log('maxMinerBlock => ', (await this.master.maxMinerBlock()).valueOf().toString());
-
-
+              await time.advanceBlockTo('121');
+              await this.master.deposit(0, 0, { from: bob }); // 122
+              await this.master.deposit(1, 0, { from: alice }); // 123
+              console.log('bob balance =>', (await this.token.balanceOf(bob)).valueOf().toString());
+              console.log('alice balance =>', (await this.token.balanceOf(alice)).valueOf().toString());
          });
+
+         // it('when dely deposit test', async () => {
+         //      // startBlock = 100
+         //      this.master = await MasterStar.new(this.token.address, dev, '100', '100', { from: alice });
+         //      await this.token.transferOwnership(this.master.address, { from: alice });
+         //      await this.master.mintEarlybirdToken(lpAddr, {from: alice});
+         //      await this.master.add('100', this.lp.address, true);
+         //      console.log('lastRewardBlock => ', (await this.master.poolInfo(0))['lastRewardBlock'].toString());
+         //
+         //      await time.advanceBlockTo('110');
+         //      await this.lp.approve(this.master.address, '1000', { from: bob });
+         //      await this.master.deposit(0, '100', { from: bob }); // 111
+         //
+         //      console.log('startBlock => ', (await this.master.startBlock()).valueOf().toString());
+         //      console.log('firstMinerBlock => ', (await this.master.firstMinerBlock()).valueOf().toString());
+         //      console.log('genesisEndBlock => ', (await this.master.genesisEndBlock()).valueOf().toString());
+         //      console.log('maxMinerBlock => ', (await this.master.maxMinerBlock()).valueOf().toString());
+         //
+         // });
          it('when migrate end', async () => {
            // this.master = await MasterStar.new(this.token.address, dev, '100', '100', { from: alice });
            // await this.token.transferOwnership(this.master.address, { from: alice });
