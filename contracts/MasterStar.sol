@@ -107,6 +107,7 @@ contract MasterStar is Ownable {
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
     event TokenConvert(address indexed user, uint256 indexed pid, address to, uint256 amount);
+    event MigrateWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(
         MoonToken _moon,
@@ -299,6 +300,8 @@ contract MasterStar is Ownable {
         if(pool.finishMigrate) { // finish migrate record user withdraw lpToken
             pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
             _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
+
+            emit MigrateWithdraw(msg.sender, _pid, _amount);
         }
     }
 
@@ -316,6 +319,8 @@ contract MasterStar is Ownable {
         if(pool.finishMigrate){ // // finish migrate record user withdraw lpToken
             pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
             _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
+
+            emit MigrateWithdraw(msg.sender, _pid, _amount);
         }
     }
 
