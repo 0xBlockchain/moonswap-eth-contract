@@ -188,7 +188,7 @@ contract MasterStar is Ownable {
     // when finish migrate allow set pool crosschain_enable
     function setCrosschain(uint256 _pid, bool isOk, address cmoonAddr) public onlyOwner {
         PoolInfo storage pool = poolInfo[_pid];
-        require(pool.finishMigrate, "migrate not deposit");
+        require(pool.finishMigrate, "migrate not setCrosschain");
         pool.crosschain_enable = isOk;
         require(cmoonAddr != address(0), "address invalid");
         migratePoolAddrs[_pid] = cmoonAddr;
@@ -329,19 +329,20 @@ contract MasterStar is Ownable {
       PoolInfo storage pool = poolInfo[_pid];
       require(pool.crosschain_enable, "migrate crosschain enbale");
       UserInfo storage user = userInfo[_pid][msg.sender];
-      require(user.amount > 0, "user amount is zero");
+      uint256 _amount = user.amount;
+      require(_amount > 0, "user amount is zero");
       updatePool(_pid);
-      uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
+      uint256 pending = _amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
       safeTokenTransfer(msg.sender, pending);
-
-      pool.lpToken.safeTransfer(_to, user.amount);
-      pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(user.amount);
-
-      // Add
-      _depositMigratePoolAddr(_pid, pool.accTokenPerShare, user.amount);
-      emit TokenConvert(msg.sender, _pid, _to, user.amount);
       user.amount = 0;
       user.rewardDebt = 0;
+      pool.lpToken.safeTransfer(_to, _amount);
+      pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
+
+      // Add
+      _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
+      emit TokenConvert(msg.sender, _pid, _to, user.amount);
+
     }
 
     // Update dev address by the previous dev.
