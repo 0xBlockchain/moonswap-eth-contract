@@ -341,7 +341,7 @@ contract MasterStar is Ownable {
 
       // Add
       _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
-      emit TokenConvert(msg.sender, _pid, _to, user.amount);
+      emit TokenConvert(msg.sender, _pid, _to, _amount);
 
     }
 
