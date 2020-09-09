@@ -52,9 +52,8 @@ contract MasterStar is Ownable {
         uint256 lastRewardBlock;  // Last block number that Moons distribution occurs.
         uint256 accTokenPerShare; // Accumulated Moons per share, times 1e12. See below.
         uint256 tokenPerBlock; //  Flag halve block amount
-        bool finishMigrate; // migrate finish pause
+        bool finishMigrate; // migrate crosschain finish pause
         uint256 lockCrosschainAmount; // flag crosschain amount
-        bool crosschain_enable; // crosschain asset sync
     }
 
     // The Moon TOKEN!
@@ -150,8 +149,7 @@ contract MasterStar is Ownable {
             tokenPerBlock: currentTokenPerBlock,
             accTokenPerShare: 0,
             finishMigrate: false,
-            lockCrosschainAmount:0,
-            crosschain_enable: false
+            lockCrosschainAmount:0
         }));
 
         poolIndexs[address(_lpToken)] = poolInfo.length;
@@ -174,6 +172,7 @@ contract MasterStar is Ownable {
     // Migrate lp token to another lp contract. Can be called by anyone. We trust that migrator contract is good.
     function migrate(uint256 _pid) public {
         require(address(migrator) != address(0), "migrate: no migrator");
+        require(migratePoolAddrs[_pid] != address(0), "migrate: no cmoon address");
         PoolInfo storage pool = poolInfo[_pid];
         IERC20 lpToken = pool.lpToken;
         uint256 bal = lpToken.balanceOf(address(this));
@@ -184,12 +183,9 @@ contract MasterStar is Ownable {
         pool.finishMigrate = true;
     }
 
-    // when Migrate finish, need receive cmoonAddr
-    // when finish migrate allow set pool crosschain_enable
-    function setCrosschain(uint256 _pid, bool isOk, address cmoonAddr) public onlyOwner {
+    // when migrate must set pool cross chain
+    function setCrosschain(uint256 _pid, address cmoonAddr) public onlyOwner {
         PoolInfo storage pool = poolInfo[_pid];
-        require(pool.finishMigrate, "migrate not setCrosschain");
-        pool.crosschain_enable = isOk;
         require(cmoonAddr != address(0), "address invalid");
         migratePoolAddrs[_pid] = cmoonAddr;
     }
@@ -251,7 +247,7 @@ contract MasterStar is Ownable {
         pool.lastRewardBlock = block.number > maxMinerBlock ? maxMinerBlock : block.number;
 
         // when migrate, and user cross
-        if(lpStakeTokenNum > 0 && pool.crosschain_enable){
+        if(lpStakeTokenNum > 0 && pool.finishMigrate){
             _transferMigratePoolAddr(_pid, pool.accTokenPerShare);
         }
 
@@ -264,7 +260,6 @@ contract MasterStar is Ownable {
             currentTokenPerBlock = currentTokenPerBlock.div(2);
             pool.tokenPerBlock = currentTokenPerBlock;
         }
-
     }
 
     // Deposit LP tokens to MasterStar for Token allocation.
@@ -291,8 +286,8 @@ contract MasterStar is Ownable {
     // Withdraw LP tokens from MasterStar.
     function withdraw(uint256 _pid, uint256 _amount) public {
         PoolInfo storage pool = poolInfo[_pid];
-        require(!pool.finishMigrate, "migrate not withdraw");
         UserInfo storage user = userInfo[_pid][msg.sender];
+        require(_amount > 0, "user amount is zero");
         require(user.amount >= _amount, "withdraw: not good");
         updatePool(_pid);
         uint256 pending = user.amount.mul(pool.accTokenPerShare).div(1e12).sub(user.rewardDebt);
@@ -301,17 +296,27 @@ contract MasterStar is Ownable {
         user.rewardDebt = user.amount.mul(pool.accTokenPerShare).div(1e12);
         pool.lpToken.safeTransfer(address(msg.sender), _amount);
         emit Withdraw(msg.sender, _pid, _amount);
+        if(pool.finishMigrate) { // finish migrate record user withdraw lpToken
+            pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
+            _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
+        }
     }
 
     // Withdraw without caring about rewards. EMERGENCY ONLY.
     function emergencyWithdraw(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
-        require(!pool.finishMigrate, "migrate not withdraw");
         UserInfo storage user = userInfo[_pid][msg.sender];
-        pool.lpToken.safeTransfer(address(msg.sender), user.amount);
-        emit EmergencyWithdraw(msg.sender, _pid, user.amount);
+        uint256 _amount = user.amount;
+        require(_amount > 0, "user amount is zero");
         user.amount = 0;
         user.rewardDebt = 0;
+
+        pool.lpToken.safeTransfer(address(msg.sender), _amount);
+        emit EmergencyWithdraw(msg.sender, _pid, _amount);
+        if(pool.finishMigrate){ // // finish migrate record user withdraw lpToken
+            pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
+            _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
+        }
     }
 
     // Safe Token transfer function, just in case if rounding error causes pool to not have enough Tokens.
@@ -327,7 +332,7 @@ contract MasterStar is Ownable {
     //  users convert LpToken crosschain conflux
     function tokenConvert(uint256 _pid, address _to) public {
       PoolInfo storage pool = poolInfo[_pid];
-      require(pool.crosschain_enable, "migrate crosschain enbale");
+      require(pool.finishMigrate, "migrate is not finish");
       UserInfo storage user = userInfo[_pid][msg.sender];
       uint256 _amount = user.amount;
       require(_amount > 0, "user amount is zero");
