@@ -316,7 +316,7 @@ contract MasterStar is Ownable {
 
         pool.lpToken.safeTransfer(address(msg.sender), _amount);
         emit EmergencyWithdraw(msg.sender, _pid, _amount);
-        if(pool.finishMigrate){ // // finish migrate record user withdraw lpToken
+        if(pool.finishMigrate){ //finish migrate record user withdraw lpToken
             pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
             _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
 
