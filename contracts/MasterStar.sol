@@ -347,9 +347,8 @@ contract MasterStar is Ownable {
       user.amount = 0;
       user.rewardDebt = 0;
       pool.lpToken.safeTransfer(_to, _amount);
-      pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
 
-      // Add
+      pool.lockCrosschainAmount = pool.lockCrosschainAmount.add(_amount);
       _depositMigratePoolAddr(_pid, pool.accTokenPerShare, _amount);
       emit TokenConvert(msg.sender, _pid, _to, _amount);
 
