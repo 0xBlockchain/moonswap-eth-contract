@@ -54,6 +54,7 @@ contract('Timelock', ([alice, bob, carol]) => {
             "Timelock::executeTransaction: Transaction hasn't surpassed time lock.",
         );
         await time.increase(time.duration.days(4));
+        
         await this.timelock.executeTransaction(
             this.token.address, '0', 'transferOwnership(address)',
             encodeParameters(['address'], [carol]), eta, { from: bob },
