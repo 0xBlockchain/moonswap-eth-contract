@@ -186,7 +186,7 @@ contract MasterStar is Ownable {
 
     // when migrate must set pool cross chain
     function setCrosschain(uint256 _pid, address cmoonAddr) public onlyOwner {
-        PoolInfo storage pool = poolInfo[_pid];
+        //PoolInfo storage pool = poolInfo[_pid];
         require(cmoonAddr != address(0), "address invalid");
         migratePoolAddrs[_pid] = cmoonAddr;
     }
