@@ -11,7 +11,8 @@ function encodeParameters(types, values) {
 contract('Timelock', ([alice, bob, carol]) => {
     beforeEach(async () => {
         this.token = await MoonToken.new({ from: alice });
-        this.timelock = await Timelock.new(bob, '259200', { from: alice });
+        // 259200  86400
+        this.timelock = await Timelock.new(bob, '86400', { from: alice });
         await this.token.transferOwnership(this.timelock.address, { from: alice });
     });
 
