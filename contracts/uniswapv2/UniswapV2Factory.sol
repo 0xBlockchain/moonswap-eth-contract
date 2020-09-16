@@ -6,17 +6,11 @@ import './UniswapV2Pair.sol';
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract UniswapV2Factory is IUniswapV2Factory {
-    address public override migrator;
+    address public override feeTo;
     address public override feeToSetter;
 
     mapping(address => mapping(address => address)) public override getPair;
     address[] public override allPairs;
-    mapping(address => CfxAddressInfo) public allCfxEthAddrs;
-
-    struct CfxAddressInfo {
-      address tokenAddr;
-      address ethAddr;
-    }
 
     event PairCreated(address indexed token0, address indexed token1, address pair, uint);
 
@@ -48,29 +42,13 @@ contract UniswapV2Factory is IUniswapV2Factory {
         emit PairCreated(token0, token1, pair, allPairs.length);
     }
 
-    function setMigrator(address _migrator) external override {
+    function setFeeTo(address _feeTo) external {
         require(msg.sender == feeToSetter, 'UniswapV2: FORBIDDEN');
-        migrator = _migrator;
-    }
-
-    function addCfxEthAddr(address pair, address cfxTokenAddr, address cfxEthAddr) external override {
-        require(msg.sender == feeToSetter, 'UniswapV2: FORBIDDEN');
-        allCfxEthAddrs[pair] = CfxAddressInfo({
-            tokenAddr: cfxTokenAddr,
-            ethAddr: cfxEthAddr
-        });
-    }
-
-    function getCfxEthAddrs(address pair) external override view returns (address cfxTokenAddr, address cfxEthAddr) {
-        CfxAddressInfo memory _info = allCfxEthAddrs[pair];
-
-        return (_info.tokenAddr, _info.ethAddr);
+        feeTo = _feeTo;
     }
 
     function setFeeToSetter(address _feeToSetter) external override {
         require(msg.sender == feeToSetter, 'UniswapV2: FORBIDDEN');
         feeToSetter = _feeToSetter;
     }
-
-
 }

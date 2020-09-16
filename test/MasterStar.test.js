@@ -9,12 +9,29 @@ contract('MasterStar', ([alice, bob, carol, lpAddr, crossAddr, dev, minter]) => 
     });
 
     it('should set correct state variables', async () => {
-        this.master = await MasterStar.new(this.token.address, dev, '1000', '0', { from: alice });
-        await this.token.transferOwnership(this.master.address, { from: alice });
-        await this.master.mintEarlybirdToken(lpAddr, {from: alice});
-        const earlybirdLpAddr = await this.master.earlybirdLpAddr();
-        assert.equal(earlybirdLpAddr.valueOf(), lpAddr);
-        assert.equal((await this.token.balanceOf(lpAddr)).valueOf(), '1250000');
+        // this.master = await MasterStar.new(this.token.address, dev, '1000', '0', { from: alice });
+        // await this.token.transferOwnership(this.master.address, { from: alice });
+        // await this.master.mintEarlybirdToken(lpAddr, {from: alice});
+        // const earlybirdLpAddr = await this.master.earlybirdLpAddr();
+        // assert.equal(earlybirdLpAddr.valueOf(), lpAddr);
+        // assert.equal((await this.token.balanceOf(lpAddr)).valueOf(), '1250000');
+        // const token = await this.master.token();
+        // const devaddr = await this.master.devaddr();
+        // const fcLockAirdropAddr = await this.master.fcLockAirdropAddr();
+        // const owner = await this.token.owner();
+        // assert.equal(token.valueOf(), this.token.address);
+        // assert.equal(devaddr.valueOf(), dev);
+        // assert.equal(fcLockAirdropAddr.valueOf(), airdropFc);
+        // assert.equal(owner.valueOf(), this.master.address);
+    });
+
+    it('should set update allocpoint', async () => {
+        // this.master = await MasterStar.new(this.token.address, dev, '1000', '0', { from: alice });
+        // await this.token.transferOwnership(this.master.address, { from: alice });
+        // await this.master.mintEarlybirdToken(lpAddr, {from: alice});
+        // const earlybirdLpAddr = await this.master.earlybirdLpAddr();
+        // assert.equal(earlybirdLpAddr.valueOf(), lpAddr);
+        // assert.equal((await this.token.balanceOf(lpAddr)).valueOf(), '1250000');
         // const token = await this.master.token();
         // const devaddr = await this.master.devaddr();
         // const fcLockAirdropAddr = await this.master.fcLockAirdropAddr();
@@ -35,6 +52,30 @@ contract('MasterStar', ([alice, bob, carol, lpAddr, crossAddr, dev, minter]) => 
             await this.lp2.transfer(alice, '1000', { from: minter });
             await this.lp2.transfer(bob, '1000', { from: minter });
             await this.lp2.transfer(carol, '1000', { from: minter });
+            this.lp3 = await MockERC20.new('LPToken3', 'LP3', '10000000000', { from: minter });
+            await this.lp3.transfer(alice, '1000', { from: minter });
+            await this.lp3.transfer(bob, '1000', { from: minter });
+            await this.lp3.transfer(carol, '1000', { from: minter });
+            this.lp4 = await MockERC20.new('LPToken3', 'LP3', '10000000000', { from: minter });
+            await this.lp4.transfer(alice, '1000', { from: minter });
+            await this.lp4.transfer(bob, '1000', { from: minter });
+            await this.lp4.transfer(carol, '1000', { from: minter });
+            this.lp4 = await MockERC20.new('LPToken4', 'LP4', '10000000000', { from: minter });
+            await this.lp4.transfer(alice, '1000', { from: minter });
+            await this.lp4.transfer(bob, '1000', { from: minter });
+            await this.lp4.transfer(carol, '1000', { from: minter });
+            this.lp4 = await MockERC20.new('LPToken5', 'LP5', '10000000000', { from: minter });
+            await this.lp4.transfer(alice, '1000', { from: minter });
+            await this.lp4.transfer(bob, '1000', { from: minter });
+            await this.lp4.transfer(carol, '1000', { from: minter });
+            this.lp4 = await MockERC20.new('LPToken6', 'LP6', '10000000000', { from: minter });
+            await this.lp4.transfer(alice, '1000', { from: minter });
+            await this.lp4.transfer(bob, '1000', { from: minter });
+            await this.lp4.transfer(carol, '1000', { from: minter });
+            this.lp4 = await MockERC20.new('LPToken7', 'LP7', '10000000000', { from: minter });
+            await this.lp4.transfer(alice, '1000', { from: minter });
+            await this.lp4.transfer(bob, '1000', { from: minter });
+            await this.lp4.transfer(carol, '1000', { from: minter });
          });
 
          it('should allow emergency withdraw', async () => {
@@ -47,6 +88,14 @@ contract('MasterStar', ([alice, bob, carol, lpAddr, crossAddr, dev, minter]) => 
             // assert.equal((await this.lp.balanceOf(bob)).valueOf(), '1000');
          });
 
+         it('should allow set allocPoint', async () => {
+            this.master = await MasterStar.new(this.token.address, dev, '10', '100', { from: alice });
+            await this.token.transferOwnership(this.master.address, { from: alice });
+            await this.master.add(6, this.lp.address, true);
+
+
+
+         });
          // it('mult pool test diff time', async () => {
          //      // startBlock = 100
          //      this.master = await MasterStar.new(this.token.address, dev, '10', '100', { from: alice });
@@ -73,23 +122,23 @@ contract('MasterStar', ([alice, bob, carol, lpAddr, crossAddr, dev, minter]) => 
 
          it('mult pool test same time', async () => {
               // startBlock = 100
-              this.master = await MasterStar.new(this.token.address, dev, '10', '100', { from: alice });
-              await this.token.transferOwnership(this.master.address, { from: alice });
-              await this.master.mintEarlybirdToken(lpAddr, {from: alice});
-              await this.master.add(1, this.lp.address, true);
-              await this.master.add(2, this.lp2.address, true);
-
-              await time.advanceBlockTo('110');
-              await this.lp.approve(this.master.address, '1000', { from: bob });
-              await this.lp2.approve(this.master.address, '1000', { from: alice });
-              await this.master.deposit(0, '100', { from: bob }); // 111
-              await this.master.deposit(1, '100', { from: alice }); // 114
-
-              await time.advanceBlockTo('121');
-              await this.master.deposit(0, 0, { from: bob }); // 122
-              await this.master.deposit(1, 0, { from: alice }); // 123
-              console.log('bob balance =>', (await this.token.balanceOf(bob)).valueOf().toString());
-              console.log('alice balance =>', (await this.token.balanceOf(alice)).valueOf().toString());
+              // this.master = await MasterStar.new(this.token.address, dev, '10', '100', { from: alice });
+              // await this.token.transferOwnership(this.master.address, { from: alice });
+              // await this.master.mintEarlybirdToken(lpAddr, {from: alice});
+              // await this.master.add(1, this.lp.address, true);
+              // await this.master.add(2, this.lp2.address, true);
+              //
+              // await time.advanceBlockTo('110');
+              // await this.lp.approve(this.master.address, '1000', { from: bob });
+              // await this.lp2.approve(this.master.address, '1000', { from: alice });
+              // await this.master.deposit(0, '100', { from: bob }); // 111
+              // await this.master.deposit(1, '100', { from: alice }); // 114
+              //
+              // await time.advanceBlockTo('121');
+              // await this.master.deposit(0, 0, { from: bob }); // 122
+              // await this.master.deposit(1, 0, { from: alice }); // 123
+              // console.log('bob balance =>', (await this.token.balanceOf(bob)).valueOf().toString());
+              // console.log('alice balance =>', (await this.token.balanceOf(alice)).valueOf().toString());
          });
 
          // it('when dely deposit test', async () => {
