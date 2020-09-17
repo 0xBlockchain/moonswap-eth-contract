@@ -8,27 +8,33 @@ import "./uniswapv2/interfaces/ICrosschainFactory.sol";
 
 contract Migrator {
     address public master;
-    address public oldFactory;
     ICrosschainFactory public factory;
     uint256 public notBeforeBlock;
     uint256 public desiredLiquidity = uint256(-1);
+    mapping(address => bool) public originalFactories;
 
     constructor(
         address _master,
-        address _oldFactory,
+        address[] memory _oldFactories,
         ICrosschainFactory _factory,
         uint256 _notBeforeBlock
     ) public {
         master = _master;
-        oldFactory = _oldFactory;
         factory = _factory;
         notBeforeBlock = _notBeforeBlock;
+
+        uint range = _oldFactories.length;
+        require(range > 0, "Migrate: oldFactory Empty");
+
+        for (uint i = 0; i < range; i++) {
+            originalFactories[_oldFactories[i]] = true;
+        }
     }
 
     function migrate(IUniswapV2Pair orig) public returns (ICrosschainPair) {
         require(msg.sender == master, "not from master access");
         require(block.number >= notBeforeBlock, "too early to migrate");
-        require(orig.factory() == oldFactory, "not from old factory");
+        require(originalFactories[orig.factory()], "not from old factory");
         address token0 = orig.token0();
         address token1 = orig.token1();
         ICrosschainPair pair = ICrosschainPair(factory.getPair(token0, token1));

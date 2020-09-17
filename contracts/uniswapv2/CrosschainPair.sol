@@ -28,7 +28,13 @@ contract CrosschainPair is UniswapV2ERC20 {
     uint112 private reserve0;           // uses single storage slot, accessible via getReserves
     uint112 private reserve1;           // uses single storage slot, accessible via getReserves
     uint32  private blockTimestampLast; // uses single storage slot, accessible via getReserves
-    uint public migrateLiquidity;     // migrator total liquidity
+    struct PairMigration {
+      uint migrateLiquidity;     // migrator total liquidity
+      uint amount0;
+      uint amount1;
+    }
+
+    PairMigration public pairMigration;
 
     uint private unlocked = 1;
     modifier lock() {
@@ -87,7 +93,9 @@ contract CrosschainPair is UniswapV2ERC20 {
         require(liquidity > 0, 'Moonswap: INSUFFICIENT_LIQUIDITY_MINTED');
         _mint(to, liquidity);
 
-        migrateLiquidity = migrateLiquidity.add(liquidity);
+        pairMigration.migrateLiquidity = pairMigration.migrateLiquidity.add(liquidity);
+        pairMigration.amount0 = pairMigration.amount0.add(amount0);
+        pairMigration.amount1 = pairMigration.amount1.add(amount1);
 
         // move asset for crosschain safe address audit the process
         address _receiveAddress = ICrosschainFactory(factory).getCfxReceiveAddr(address(this));
