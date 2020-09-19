@@ -75,6 +75,7 @@ contract CrosschainFactory is ICrosschainFactory {
 
     function setWETH(address _weth) external {
         require(msg.sender == feeToSetter, 'MoonSwap: FORBIDDEN');
+
         require(_weth != address(0), "MoonSwap: weth is zero");
 
         WETH = _weth;
