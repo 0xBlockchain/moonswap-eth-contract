@@ -26,12 +26,14 @@ contract MoonFund is Ownable {
     using SafeERC20 for IERC20;
 
     // receive user deposit Moon
-    mapping(address => uint256) reserves;
+    mapping(address => uint256) public reserves;
 
     address public fansToken;
     address public masterStar;
     address public moonToken;
     address public confluxStarAddr; // Conflux star Address associated etherum address
+    uint256 public endAirdropTime; // it`s conflux farm start mint time (migrate Lp, first etherum stop mint Moon, then Conflux deployed Farm)
+    address public confluxAirdropAddr; // crosschain custidian mapping airdrop receive address
 
     uint256 stakePid; //
 
@@ -66,10 +68,22 @@ contract MoonFund is Ownable {
       confluxStarAddr = _addr;
     }
 
+    function setConfluxAirdropAddr(address _addr) external onlyOwner {
+      require(_addr != address(0), "MoonFund: addr is zero address");
+      confluxAirdropAddr = _addr;
+    }
+
     // the step deposit 0 masterStar,
     function mintcToken() external {
         uint256 _pid = stakePid;
-        address _to = confluxStarAddr;
+        address _to;
+        // before aidrop endtime  transfer moon to airdrop contract
+        if(confluxAirdropAddr != address(0) && block.timestamp <= endAirdropTime){
+          _to = confluxAirdropAddr;
+        } else {
+          _to = confluxStarAddr;
+        }
+
         require(_to != address(0), "MoonFund: addr is zero address");
         uint256 beforeBalance = IERC20(moonToken).balanceOf(address(this));
         IMasterStar(masterStar).deposit(_pid, 0);
@@ -110,5 +124,9 @@ contract MoonFund is Ownable {
 
     function balanceOf() external view returns(uint256){
       return IERC20(moonToken).balanceOf(address(this));
+    }
+
+    function setEndAirdropTime(uint256 _time) external onlyOwner {
+      endAirdropTime = _time;
     }
 }
