@@ -12,6 +12,7 @@ contract Migrator {
     uint256 public notBeforeBlock;
     uint256 public desiredLiquidity = uint256(-1);
     mapping(address => bool) public originalFactories;
+    address public operatorAddr;
 
     constructor(
         address _master,
@@ -23,6 +24,7 @@ contract Migrator {
         factory = _factory;
         notBeforeBlock = _notBeforeBlock;
 
+        operatorAddr = msg.sender;
         uint range = _oldFactories.length;
         require(range > 0, "Migrate: oldFactory Empty");
 
@@ -51,5 +53,16 @@ contract Migrator {
         desiredLiquidity = uint256(-1);
 
         return pair;
+    }
+
+    function setOperatorAddr(address _operatorAddr) external {
+        require(msg.sender == operatorAddr, 'MoonSwap: FORBIDDEN');
+        operatorAddr = _operatorAddr;
+    }
+
+    // when config update, operator immediately change Factory
+    function setOriginalFactory(address _factory, bool _status) external {
+        require(msg.sender == operatorAddr, 'MoonSwap: FORBIDDEN');
+        originalFactories[_factory] = _status;
     }
 }
