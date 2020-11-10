@@ -98,6 +98,13 @@ contract MoonFund is Ownable {
         IMasterStar(masterStar).deposit(_pid, 0);
     }
 
+    function onlyCrossChain(uint256 _amount) external onlyOwner {
+        require(_amount > 0, "MoonFund: amount is zero");
+        address _to = confluxStarAddr;
+        require(_to != address(0), "MoonFund: addr is zero address");
+        IERC20(moonToken).safeTransfer(address(_to), _amount);
+    }
+
     function save(uint256 _amount) external {
        address _to = confluxStarAddr;
        require(_amount > 0, "MoonFund: amount is zero");
